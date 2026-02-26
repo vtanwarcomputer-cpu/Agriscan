@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriScan - Plant Health AI</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,900;1,900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #051210;
+            --accent-primary: #34c870;
+            --accent-secondary: #ffb142;
+            --text-primary: #e8f0ff;
+            --text-muted: #7a9abf;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 2rem;
+        }
+
+        /* Background System */
+        .background-shapes {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 65% 50% at 15% 15%, rgba(52, 200, 112, 0.18) 0%, transparent 65%),
+                radial-gradient(ellipse 55% 60% at 85% 85%, rgba(255, 177, 66, 0.15) 0%, transparent 65%),
+                radial-gradient(ellipse 40% 40% at 60% 25%, rgba(52, 200, 112, 0.06) 0%, transparent 55%),
+                linear-gradient(155deg, #020706 0%, #051210 55%, #020706 100%);
+        }
+
+        .background-shapes::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes logoFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-9px);
+            }
+        }
+
+        .fade-up {
+            animation: fadeUp 0.5s ease backwards;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 1rem;
+            z-index: 10;
+            padding-bottom: 1rem;
+        }
+
+        .logo-container {
+            width: 80px;
+            height: 80px;
+            background: radial-gradient(circle, rgba(52, 200, 112, 0.1) 0%, rgba(255, 255, 255, 0.02) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo-container::before {
+            content: '';
+            position: absolute;
+            inset: -16px;
+            border-radius: 50%;
+            border: 1px solid rgba(52, 200, 112, 0.2);
+            background: radial-gradient(circle, rgba(52, 200, 112, 0.05) 0%, transparent 70%);
+        }
+
+        .logo-container svg {
+            width: 40px;
+            height: 40px;
+            filter: drop-shadow(0 4px 16px rgba(163, 230, 53, 0.5));
+        }
+
+        .hero-section h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 4rem;
+            font-weight: 900;
+            margin: 0;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            background: linear-gradient(180deg, #ffffff 0%, #c1d5e0 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-section p {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin: 0;
+            letter-spacing: 0.02em;
+        }
+
+        /* Main Container Layout */
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            z-index: 1;
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 780px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Glass Cards */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.065);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 22px;
+            backdrop-filter: blur(32px) saturate(1.7);
+            -webkit-backdrop-filter: blur(32px) saturate(1.7);
+            box-shadow:
+                0 8px 42px rgba(0, 0, 0, 0.48),
+                0 1.5px 0 rgba(255, 255, 255, 0.09) inset,
+                0 -1px 0 rgba(0, 0, 0, 0.20) inset;
+            overflow: hidden;
+            position: relative;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            transition: transform 0.35s, box-shadow 0.35s;
+        }
+
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 10%;
+            right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+        }
+
+        .glass-panel:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 18px 64px rgba(0, 0, 0, 0.55), 0 1.5px 0 rgba(255, 255, 255, 0.12) inset;
+        }
+
+        .glass-panel h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(128deg, var(--accent-primary) 0%, #ffffff 40%, var(--accent-secondary) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @media (max-width: 780px) {
+            .glass-panel {
+                backdrop-filter: blur(20px) saturate(1.7);
+                -webkit-backdrop-filter: blur(20px) saturate(1.7);
+                border-radius: 16px;
+            }
+        }
+
+        /* Disease Detection Section */
+        .upload-area {
+            width: 100%;
+            height: 250px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px dashed rgba(255, 255, 255, 0.22);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-over {
+            border-color: var(--accent-primary);
+            background: rgba(52, 200, 112, 0.11);
+        }
+
+        .upload-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-muted);
+            transition: opacity 0.3s;
+        }
+
+        .upload-placeholder svg {
+            color: var(--accent-primary);
+        }
+
+        #image-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .glass-btn {
+            flex: 1;
+            padding: 0.85rem 1.5rem;
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: linear-gradient(135deg, #1a9e52, #34c870);
+            border: none;
+            border-radius: 14px;
+            color: #fff;
+            box-shadow:
+                0 4px 20px rgba(52, 200, 112, 0.28),
+                0 1px 0 rgba(255, 255, 255, 0.20) inset;
+            transition: all 0.3s;
+        }
+
+        .glass-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: none;
+            color: var(--text-muted);
+        }
+
+        .glass-btn.primary:not(:disabled):hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(52, 200, 112, 0.42);
+        }
+
+        .glass-btn.secondary {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            box-shadow: none;
+            color: var(--text-primary);
+        }
+
+        .glass-btn.secondary:not(:disabled):hover {
+            background: rgba(255, 255, 255, 0.11);
+            transform: translateY(-2px);
+        }
+
+        /* Modal inside card */
+        .glass-panel-inner {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 16px;
+            padding: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            animation: fadeUp 0.3s ease;
+        }
+
+        .glass-panel-inner h3 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .result-content {
+            min-height: 50px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* Chat Section */
+        .ai-chat {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-history {
+            flex: 1;
+            min-height: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            padding-right: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Scrollbar styles */
+        .chat-history::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-history::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+
+        .chat-history::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .chat-history::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .message {
+            display: flex;
+            width: 100%;
+            animation: fadeUp 0.3s ease forwards;
+        }
+
+        .message.ai-message {
+            justify-content: flex-start;
+        }
+
+        .message.user-message {
+            justify-content: flex-end;
+        }
+
+        .glass-bubble {
+            max-width: 80%;
+            padding: 0.85rem 1.15rem;
+            border-radius: 18px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            background: rgba(255, 255, 255, 0.065);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(16px);
+        }
+
+        .ai-message .glass-bubble {
+            background: rgba(52, 200, 112, 0.08);
+            border: 1px solid rgba(52, 200, 112, 0.2);
+            border-bottom-left-radius: 4px;
+        }
+
+        .user-message .glass-bubble {
+            background: rgba(255, 177, 66, 0.08);
+            border: 1px solid rgba(255, 177, 66, 0.2);
+            border-bottom-right-radius: 4px;
+        }
+
+        /* Inputs */
+        .chat-input-area {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .glass-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            padding: 0.85rem 1.25rem;
+            color: inherit;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .glass-input:focus {
+            border-color: var(--accent-primary);
+            background: rgba(255, 255, 255, 0.11);
+        }
+
+        .send-btn {
+            flex: none;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            border-radius: 50%;
+            backdrop-filter: blur(10px);
+            color: var(--accent-primary);
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .send-btn:hover {
+            background: rgba(255, 255, 255, 0.16);
+            transform: scale(1.1);
+        }
+
+        /* Health Score Progress */
+        .health-score-container {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+        }
+
+        .health-score-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #health-score-value {
+            font-size: 1.25rem;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            color: var(--accent-primary);
+            transition: color 0.3s;
+        }
+
+        .health-progress-bar {
+            width: 100%;
+            height: 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+        }
+
+        .health-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #f97316 0%, #ffb142 50%, #34c870 100%);
+            border-radius: 12px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px rgba(52, 200, 112, 0.5);
+        }
+
+        /* Utilities */
+        .loading-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--accent-primary);
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto;
+        }
+
+        .loading-spinner.chat-spinner {
+            border-top-color: var(--accent-secondary);
+            margin: 0;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .result-text {
+            margin-top: 10px;
+        }
+
+        .result-text p {
+            margin-bottom: 0.5rem;
+        }
+
+        .result-text p:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-text strong {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .error-text {
+            color: #f97316;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-shapes"></div>
+
+    <main class="app-container">
+        <header class="hero-section fade-up">
+            <div class="logo-container">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M21 3V4.5C21 8.7 18 12.5 13 13.52V21H11V13.52C6 12.5 3 8.7 3 4.5V3H4.5C8.7 3 12.5 6 13.52 11C14.54 6 18.3 3 22.5 3H21Z"
+                        fill="url(#leaf-grad)" />
+                    <path d="M11 21H13V13.5C13 13.5 13 8 20 5C20 5 13.5 6 11.5 12" stroke="#a3e635"
+                        stroke-width="0.5" />
+                    <path d="M13 21H11V13.5C11 13.5 11 8 4 5C4 5 10.5 6 12.5 12" stroke="#34c870" stroke-width="0.5" />
+                    <defs>
+                        <linearGradient id="leaf-grad" x1="3" y1="3" x2="21" y2="21" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#a3e635" />
+                            <stop offset="1" stop-color="#34c870" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            <h1>AgriScan</h1>
+            <p>Upload a photo &middot; Detect disease &middot; Get expert advice instantly</p>
+        </header>
+
+        <div class="content-wrapper">
+            <!-- Left Side: Disease Detection -->
+            <section class="disease-detection glass-panel fade-up" style="animation-delay: 0.1s;">
+                <h2>Health Scanner</h2>
+
+                <div class="upload-area" id="drop-zone">
+                    <input type="file" id="image-upload" accept="image/*" hidden>
+                    <div class="upload-placeholder" id="upload-placeholder">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        <p style="font-size: 0.85rem; font-weight: 500;">Click or drag image here</p>
+                    </div>
+                    <img id="image-preview" src="" alt="Preview" hidden>
+                </div>
+
+                <div class="actions">
+                    <button id="analyze-btn" class="glass-btn primary" disabled>Analyze Plant</button>
+                    <button id="clear-btn" class="glass-btn secondary" disabled>Clear</button>
+                </div>
+
+                <div id="analysis-result" class="result-box glass-panel-inner" hidden>
+                    <h3>Analysis Result</h3>
+                    <div class="health-score-container" id="health-score-container" hidden>
+                        <div class="health-score-label">Health Score <span id="health-score-value">0</span></div>
+                        <div class="health-progress-bar">
+                            <div class="health-progress-fill" id="health-progress-fill"></div>
+                        </div>
+                    </div>
+                    <div class="result-content" id="result-content">
+                        <div class="loading-spinner" id="analysis-spinner" hidden></div>
+                        <div class="result-text" id="result-text"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Side: Chatbot -->
+            <section class="ai-chat glass-panel fade-up" style="animation-delay: 0.2s;">
+                <h2>AI Assistant</h2>
+
+                <div class="chat-history" id="chat-history">
+                    <div class="message ai-message" style="animation-delay: 0.3s;">
+                        <div class="message-bubble glass-bubble">
+                            Hello! I am AgriScan, your AI plant specialist. Upload a plant image for analysis or ask me
+                            any plant-related questions.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-area fade-up" style="animation-delay: 0.4s;">
+                    <input type="text" id="chat-input" class="glass-input"
+                        placeholder="Ask about plant care, diseases...">
+                    <button id="send-btn" class="glass-btn send-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "@google/genai": "https://esm.sh/@google/genai"
+        }
+      }
+    </script>
+    <script type="module">
+        import { GoogleGenAI } from '@google/genai';
+
+        // API Configuration
+        const API_KEY = 'AIzaSyA70uR7mhGgoq7f4drrPR0Sy_l2MOuuROA';
+        const genai = new GoogleGenAI({ apiKey: API_KEY });
+
+        // DOM Elements - Disease Detection
+        const dropZone = document.getElementById('drop-zone');
+        const imageUpload = document.getElementById('image-upload');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const imagePreview = document.getElementById('image-preview');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const analysisResult = document.getElementById('analysis-result');
+        const resultText = document.getElementById('result-text');
+        const analysisSpinner = document.getElementById('analysis-spinner');
+
+        // DOM Elements - Chat
+        const chatHistory = document.getElementById('chat-history');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-btn');
+
+        // State
+        let currentImageFile = null;
+        let currentImageBase64 = null;
+        let chatContext = [];
+
+        // --- Helper Functions ---
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+            });
+        }
+
+        function getGenerativePart(base64DataUrl) {
+            const parts = base64DataUrl.split(',');
+            const mimeType = parts[0].match(/:(.*?);/)[1];
+            const base64Data = parts[1];
+
+            return {
+                inlineData: {
+                    data: base64Data,
+                    mimeType: mimeType
+                }
+            };
+        }
+
+        function renderMarkdown(text) {
+            return text
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n\n/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+        }
+
+        // --- Image Upload & Preview Logic ---
+
+        function handleFileSelect(file) {
+            if (!file || !file.type.startsWith('image/')) return;
+
+            currentImageFile = file;
+
+            fileToBase64(file).then(base64 => {
+                currentImageBase64 = base64;
+                imagePreview.src = base64;
+                imagePreview.hidden = false;
+                uploadPlaceholder.hidden = true;
+
+                analyzeBtn.disabled = false;
+                clearBtn.disabled = false;
+            });
+        }
+
+        dropZone.addEventListener('click', () => imageUpload.click());
+
+        imageUpload.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileSelect(e.target.files[0]);
+            }
+        });
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                handleFileSelect(files[0]);
+            }
+        });
+
+        clearBtn.addEventListener('click', () => {
+            currentImageFile = null;
+            currentImageBase64 = null;
+            imagePreview.src = '';
+            imagePreview.hidden = true;
+            uploadPlaceholder.hidden = false;
+            analyzeBtn.disabled = true;
+            clearBtn.disabled = true;
+            analysisResult.hidden = true;
+            imageUpload.value = '';
+        });
+
+        // --- Plant Analysis Logic ---
+
+        analyzeBtn.addEventListener('click', async () => {
+            if (!currentImageBase64) return;
+
+            analyzeBtn.disabled = true;
+            analysisResult.hidden = false;
+            analysisSpinner.hidden = false;
+            resultText.innerHTML = '';
+
+            try {
+                const scoreContainer = document.getElementById('health-score-container');
+                if (scoreContainer) scoreContainer.hidden = true;
+
+                const imagePart = getGenerativePart(currentImageBase64);
+                const prompt = "Act as an expert plant pathologist. Analyze this image. Identify the plant and any potential diseases or health issues visible. Importantly, provide a health score from 0 to 100 enclosed in brackets like exactly this format: [SCORE:85]. Where 100 is perfectly healthy and 0 is completely dead. After the score, give a short, concise response (2-3 sentences) detailing the condition and a recommended action.";
+
+                const response = await genai.models.generateContent({
+                    model: 'gemini-2.5-flash',
+                    contents: [
+                        {
+                            role: 'user',
+                            parts: [
+                                { text: prompt },
+                                imagePart
+                            ]
+                        }
+                    ]
+                });
+
+                const responseText = response.text;
+                let scoreMatch = responseText.match(/\[SCORE:\s*(\d+)\]/i);
+                let score = null;
+                let cleanText = responseText;
+
+                if (scoreMatch && scoreMatch[1]) {
+                    score = parseInt(scoreMatch[1], 10);
+                    cleanText = responseText.replace(/\[SCORE:\s*\d+\]/i, '').trim();
+                } else {
+                    let bracketMatch = responseText.match(/\[(\d+)\]/);
+                    if (bracketMatch && bracketMatch[1]) {
+                        score = parseInt(bracketMatch[1], 10);
+                        cleanText = responseText.replace(/\[\d+\]/, '').trim();
+                    }
+                }
+
+                analysisSpinner.hidden = true;
+
+                const scoreValueObj = document.getElementById('health-score-value');
+                const progressFill = document.getElementById('health-progress-fill');
+
+                if (score !== null && scoreContainer) {
+                    scoreContainer.hidden = false;
+
+                    // animate score
+                    progressFill.style.width = '0%';
+                    setTimeout(() => {
+                        progressFill.style.width = `${score}%`;
+                    }, 50);
+
+                    const duration = 1000;
+                    const steps = 20;
+                    const stepTime = duration / steps;
+                    let currentStep = 0;
+
+                    const timer = setInterval(() => {
+                        currentStep++;
+                        const currentVal = Math.round((currentStep / steps) * score);
+                        scoreValueObj.textContent = currentVal + '%';
+
+                        if (currentVal < 40) scoreValueObj.style.color = '#f97316';
+                        else if (currentVal < 70) scoreValueObj.style.color = '#ffb142';
+                        else scoreValueObj.style.color = '#34c870';
+
+                        if (currentStep >= steps) clearInterval(timer);
+                    }, stepTime);
+                }
+
+                resultText.innerHTML = renderMarkdown(cleanText);
+
+                addMessageToChat('System', 'Image analyzed. You can ask follow-up questions.');
+
+            } catch (error) {
+                console.error("Error analyzing image:", error);
+                analysisSpinner.hidden = true;
+                resultText.innerHTML = `<span class="error-text">Analysis failed. Please try again or check your API key.</span>`;
+                analyzeBtn.disabled = false;
+            }
+        });
+
+
+        // --- Chat Logic ---
+
+        function addMessageToChat(role, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${role === 'user' ? 'user-message' : 'ai-message'}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble glass-bubble';
+
+            if (role === 'loading') {
+                bubble.innerHTML = '<div class="loading-spinner chat-spinner"></div>';
+                messageDiv.id = 'loading-message';
+            } else {
+                bubble.innerHTML = renderMarkdown(text);
+            }
+
+            messageDiv.appendChild(bubble);
+            chatHistory.appendChild(messageDiv);
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        function removeLoadingMessage() {
+            const loadingMsg = document.getElementById('loading-message');
+            if (loadingMsg) {
+                loadingMsg.remove();
+            }
+        }
+
+        async function handleSendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            addMessageToChat('user', text);
+            chatInput.value = '';
+
+            addMessageToChat('loading', '');
+
+            try {
+                let parts = [{ text: text }];
+
+                if (currentImageBase64 && text.toLowerCase().includes('image')) {
+                    parts.push(getGenerativePart(currentImageBase64));
+                }
+
+                chatContext.push({ role: 'user', parts: parts });
+
+                const response = await genai.models.generateContent({
+                    model: 'gemini-2.5-flash',
+                    contents: chatContext,
+                    config: {
+                        systemInstruction: "You are AgriScan, an expert botanist and plant pathologist AI assistant. Be concise and helpful."
+                    }
+                });
+
+                removeLoadingMessage();
+
+                // Add response to context
+                chatContext.push({ role: 'model', parts: [{ text: response.text }] });
+
+                addMessageToChat('ai', response.text);
+
+            } catch (error) {
+                console.error("Chat error:", error);
+                removeLoadingMessage();
+                // If error, pop the last user message from context so they can retry
+                chatContext.pop();
+                addMessageToChat('ai', `<span class="error-text">Sorry, I encountered an error. Check console and API quotas.</span>`);
+            }
+        }
+
+        sendBtn.addEventListener('click', handleSendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSendMessage();
+        });
+    </script>
+</body>
+
+</html>
